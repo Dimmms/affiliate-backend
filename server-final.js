@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Midtrans Client Config
 const snap = new midtransClient.Snap({
-  isProduction: true,
+  isProduction: false, // ✅ false untuk Sandbox Midtrans
   serverKey: process.env.MIDTRANS_SERVER_KEY,
   clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
@@ -84,8 +84,8 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
   const notification = req.body;
 
   try {
-    const core = new midtransClient.CoreApi({
-      isProduction: true,
+        const core = new midtransClient.CoreApi({
+      isProduction: false, // ✅ Sandbox mode
       serverKey: process.env.MIDTRANS_SERVER_KEY,
       clientKey: process.env.MIDTRANS_CLIENT_KEY
     });
