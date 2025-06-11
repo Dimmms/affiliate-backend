@@ -26,7 +26,6 @@ const snap = new midtransClient.Snap({
 });
 
 // Route untuk test Snap
-console.log("✅ Key MIDTRANS:", process.env.MIDTRANS_SERVER_KEY);
 app.get("/check-payments", async (req, res) => {
   try {
     const transaction = await snap.createTransaction({
@@ -49,6 +48,7 @@ app.get("/check-payments", async (req, res) => {
 
 // Buat Transaksi Midtrans
 app.post("/create-transaction", async (req, res) => {
+  console.log("✅ Key MIDTRANS:", process.env.MIDTRANS_SERVER_KEY);
   const { nama, email, whatsapp } = req.body;
   const orderId = `ORDER-${Date.now()}-${nama.replace(/\s+/g, "-")}`;
 
@@ -124,5 +124,3 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
 });
-
-
