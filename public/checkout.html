@@ -85,7 +85,7 @@
   <button type="submit">Bayar Sekarang</button>
 </form>
 
-<script src="https://app.midtrans.com/snap/snap.js" data-client-key="Mid-client-3YZ4P07zEkU_y2Fk"></script>
+<script src="https://app.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-SojKvXFZ6-RSpydB"></script>
 <script>
   document.getElementById("payment-form").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -120,7 +120,7 @@
     if (result.token) {
       window.snap.pay(result.token, {
         onSuccess: function () {
-          window.location.href = "https://docs.google.com/document/d/1dvzp5hXU3xl54C9zMxvPQdz9j5lLmn-w7WkB87OYh4E/edit?tab=t.0";
+          window.location.href = "https://docs.google.com/document/d/1dvzp5hXU3xl54C9zMxvPQdz9j5lLmn-w7WkB87OYh4E/edit?usp=sharing";
         },
         onPending: function () {
           alert("Pembayaran sedang diproses.");
