@@ -26,6 +26,7 @@ const snap = new midtransClient.Snap({
 });
 
 // Route untuk test Snap
+console.log("✅ Key MIDTRANS:", process.env.MIDTRANS_SERVER_KEY);
 app.get("/check-payments", async (req, res) => {
   try {
     const transaction = await snap.createTransaction({
@@ -120,8 +121,8 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
   }
 });
 
-app.listen(PORT, () =>
-  console.log(`🚀 Server berjalan di http://localhost:${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`Server berjalan di http://localhost:${PORT}`);
+});
 
-console.log("Data masuk:", req.body);
+
