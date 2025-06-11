@@ -123,3 +123,5 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
 app.listen(PORT, () =>
   console.log(`🚀 Server berjalan di http://localhost:${PORT}`)
 );
+
+console.log("Data masuk:", req.body);

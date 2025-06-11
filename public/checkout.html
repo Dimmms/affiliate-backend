@@ -109,11 +109,17 @@
     });
 
     // 2. Buat transaksi Midtrans
-    const res = await fetch("/create-transaction", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nama, email, whatsapp })
-    });
+    const res = await 
+
+    fetch("https://web-production-bf13b.up.railway.app/create-transaction", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    nama,
+    email,
+    whatsapp
+  })
+})
 
     const result = await res.json();
 
