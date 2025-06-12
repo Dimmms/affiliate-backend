@@ -15,28 +15,40 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Aktifkan CORS
+// ✅ Aktifkan CORS dan tangani preflight
+const allowedOrigins = [
+  "https://affiliate-tanpa-ribet.vercel.app", // domain Vercel
+  "https://affiliate-tanpa-ribet-production.up.railway.app", // test
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: [
-    "https://affiliate-tanpa-ribet-production.up.railway.app", // frontend Railway
-    "http://localhost:3000" // saat testing lokal
-  ],
-  methods: ["GET", "POST"],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
   credentials: false
 }));
 
-// Static file
+// ✅ BONUS: Handle preflight OPTIONS
+app.options("*", cors());
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 // ✅ Midtrans Snap Client
 const snap = new midtransClient.Snap({
-  isProduction: false, // Tetap sandbox
+  isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
   clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
 
-// 💰 Create Transaction Endpoint
+// 💰 Buat Transaksi Midtrans
 app.post("/create-transaction", async (req, res) => {
   const { nama, email, whatsapp } = req.body;
   const orderId = `ORDER-${Date.now()}-${nama.replace(/\s+/g, "-")}`;
@@ -68,7 +80,7 @@ app.post("/create-transaction", async (req, res) => {
   }
 });
 
-// 🔔 Webhook dari Midtrans
+// 🔔 Webhook Midtrans
 app.post("/midtrans-notify", express.json(), async (req, res) => {
   const notification = req.body;
 
@@ -109,7 +121,7 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
   }
 });
 
-// ✅ Test Endpoint
+// 🔍 Test Endpoint
 app.get("/check-payments", async (req, res) => {
   try {
     const transaction = await snap.createTransaction({
