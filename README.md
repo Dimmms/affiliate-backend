@@ -28,7 +28,7 @@
 
 ```bash
 .
-├── server-final.js        # Backend Express + Midtrans
+├── server.js              # Backend Express + Midtrans
 ├── index.html             # Landing page utama
 ├── checkout.html          # Halaman pembayaran
 ├── diskon-harga.html      # Halaman promo

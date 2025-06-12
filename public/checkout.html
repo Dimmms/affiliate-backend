@@ -109,17 +109,11 @@
     });
 
     // 2. Buat transaksi Midtrans
-    const res = await 
-
-    fetch("https://web-production-bf13b.up.railway.app/create-transaction", {
+   const res = await fetch("affiliate-tanpa-ribet-production.up.railway.app", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    nama,
-    email,
-    whatsapp
-  })
-})
+  body: JSON.stringify({ nama, email, whatsapp })
+});
 
     const result = await res.json();
 
