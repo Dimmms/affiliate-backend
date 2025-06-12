@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 3000;
 // ✅ CORS Setup
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://affiliate-tanpa-ribet.vercel.app",
-  "https://affiliate-tanpa-ribet-production.up.railway.app"
+  "https://affiliate-frontend-kappa.vercel.app",
+  "https://affiliate-backend.up.railway.app"
 ];
 
 app.use(cors({
