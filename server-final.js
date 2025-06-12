@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import midtransClient from "midtrans-client";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import cors from "cors";
 
 // Load .env
 dotenv.config();
@@ -14,41 +15,29 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Static public folder
+// ✅ Aktifkan CORS
+app.use(cors({
+  origin: [
+    "https://affiliate-tanpa-ribet-production.up.railway.app", // frontend Railway
+    "http://localhost:3000" // saat testing lokal
+  ],
+  methods: ["GET", "POST"],
+  credentials: false
+}));
+
+// Static file
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// Midtrans Client Config
+// ✅ Midtrans Snap Client
 const snap = new midtransClient.Snap({
-  isProduction: false, // ✅ false untuk Sandbox Midtrans
+  isProduction: false, // Tetap sandbox
   serverKey: process.env.MIDTRANS_SERVER_KEY,
   clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
 
-// Route untuk test Snap
-app.get("/check-payments", async (req, res) => {
-  try {
-    const transaction = await snap.createTransaction({
-      transaction_details: {
-        order_id: `TEST-${Date.now()}`,
-        gross_amount: 10000
-      }
-    });
-
-    res.send(`
-      <h2>Status Snap Token Berhasil Dibuat</h2>
-      <p>Token: ${transaction.token}</p>
-      <p><a href="${transaction.redirect_url}" target="_blank">🔗 Cek di Snap UI</a></p>
-    `);
-  } catch (error) {
-    console.error("❌ Gagal cek metode pembayaran:", error.message);
-    res.status(500).send("Gagal cek metode pembayaran.");
-  }
-});
-
-// Buat Transaksi Midtrans
+// 💰 Create Transaction Endpoint
 app.post("/create-transaction", async (req, res) => {
-  console.log("✅ Key MIDTRANS:", process.env.MIDTRANS_SERVER_KEY);
   const { nama, email, whatsapp } = req.body;
   const orderId = `ORDER-${Date.now()}-${nama.replace(/\s+/g, "-")}`;
 
@@ -72,7 +61,6 @@ app.post("/create-transaction", async (req, res) => {
   try {
     const transaction = await snap.createTransaction(parameter);
     console.log("✅ Token dibuat:", transaction.token);
-    console.log("🔗 Redirect URL:", transaction.redirect_url);
     res.json({ token: transaction.token });
   } catch (err) {
     console.error("❌ Gagal buat transaksi:", err.message);
@@ -80,19 +68,18 @@ app.post("/create-transaction", async (req, res) => {
   }
 });
 
-// Midtrans Webhook Endpoint
+// 🔔 Webhook dari Midtrans
 app.post("/midtrans-notify", express.json(), async (req, res) => {
   const notification = req.body;
 
   try {
-        const core = new midtransClient.CoreApi({
-      isProduction: false, // ✅ Sandbox mode
+    const core = new midtransClient.CoreApi({
+      isProduction: false,
       serverKey: process.env.MIDTRANS_SERVER_KEY,
       clientKey: process.env.MIDTRANS_CLIENT_KEY
     });
 
     const statusResponse = await core.transaction.notification(notification);
-
     const {
       transaction_status,
       order_id,
@@ -101,6 +88,7 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
       transaction_time
     } = statusResponse;
 
+    // Kirim ke Google Sheets
     await fetch("https://script.google.com/macros/s/AKfycbzc61FBsea0K-WjGlm9PZq963x0yWTcy84X6Qro3J-F82nqPqzpys6u7F_hTAmSwgca/exec", {
       method: "POST",
       mode: "no-cors",
@@ -116,11 +104,31 @@ app.post("/midtrans-notify", express.json(), async (req, res) => {
 
     res.status(200).send("OK");
   } catch (error) {
-    console.error("❌ Error webhook:", error.message);
+    console.error("❌ Webhook error:", error.message);
     res.status(500).send("Webhook error");
   }
 });
 
+// ✅ Test Endpoint
+app.get("/check-payments", async (req, res) => {
+  try {
+    const transaction = await snap.createTransaction({
+      transaction_details: {
+        order_id: `TEST-${Date.now()}`,
+        gross_amount: 10000
+      }
+    });
+
+    res.send(`
+      <h2>✅ Snap Token Berhasil Dibuat</h2>
+      <p>Token: ${transaction.token}</p>
+      <p><a href="${transaction.redirect_url}" target="_blank">🔗 Coba Snap UI</a></p>
+    `);
+  } catch (error) {
+    res.status(500).send("Gagal test Snap.");
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
+  console.log(`🚀 Server aktif di http://localhost:${PORT}`);
 });
