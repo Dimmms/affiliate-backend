@@ -14,8 +14,9 @@ const allowedOrigins = [
   "https://affiliate-backend.up.railway.app"
 ];
 
+// Middleware CORS
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -25,9 +26,13 @@ app.use(cors({
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"]
 }));
+
+// Pre-flight untuk semua route
 app.options("*", cors());
 
+// Parse JSON
 app.use(express.json());
+
 
 // ✅ Midtrans Snap Client
 const snap = new midtransClient.Snap({
