@@ -57,7 +57,7 @@ app.post("/create-transaction", async (req, res) => {
     const parameter = {
       transaction_details: {
         order_id: "AFF-" + Date.now(),
-        gross_amount: 20000
+        gross_amount: 99000
       },
       credit_card: { secure: true },
       customer_details: {
