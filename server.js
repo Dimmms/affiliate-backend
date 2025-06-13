@@ -35,23 +35,19 @@ const snap = new midtransClient.Snap({
   serverKey: process.env.MIDTRANS_SERVER_KEY
 });
 
-// ✅ ROUTE: Home test
+// ✅ Home route
 app.get("/", (req, res) => {
   res.send("✅ Backend aktif: Midtrans Snap siap digunakan!");
 });
 
-// ✅ Gunakan express.Router untuk routing aman
-const router = express.Router();
-
-// ✅ Route tes root
-router.get("/", (req, res) => {
-  res.send("✅ Backend aktif tanpa error path-to-regexp");
-});
-
-// ✅ ROUTE: Buat Transaksi (pakai POST dari checkout.html)
+// ✅ Buat Transaksi
 app.post("/create-transaction", async (req, res) => {
   try {
     const { nama, email, whatsapp } = req.body;
+
+    if (!nama || !email || !whatsapp) {
+      return res.status(400).json({ error: "Data tidak lengkap" });
+    }
 
     const parameter = {
       transaction_details: {
@@ -60,25 +56,30 @@ app.post("/create-transaction", async (req, res) => {
       },
       credit_card: { secure: true },
       customer_details: {
-        first_name: nama || "User",
-        email: email || "user@example.com",
-        phone: whatsapp || "+628000000000"
+        first_name: nama,
+        email: email,
+        phone: whatsapp
       }
     };
 
-    const transaction = await snap.createTransaction(parameter);
+    // Debug log (di dalam try block)
+    console.log("📥 Data masuk:", req.body);
+    console.log("📦 Midtrans payload:", parameter);
 
-    res.json({
+    const transaction = await snap.createTransaction(parameter);
+    console.log("✅ Snap token:", transaction.token);
+
+    res.status(200).json({
       token: transaction.token,
       redirect_url: transaction.redirect_url
     });
+
   } catch (err) {
     console.error("❌ Midtrans error:", err.message);
     res.status(500).json({ error: "Gagal membuat transaksi Midtrans." });
   }
 });
 
-// ✅ Jalankan server
 app.listen(PORT, () => {
   console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
 });
