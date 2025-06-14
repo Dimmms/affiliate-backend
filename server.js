@@ -4,19 +4,17 @@ import dotenv from "dotenv";
 import midtransClient from "midtrans-client";
 
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ CORS Setup
 const allowedOrigins = [
-  "http://localhost:3000",
   "https://affiliate-frontend-kappa.vercel.app",
-  "https://affiliate-backend.up.railway.app"
+  "http://localhost:3000",
 ];
 
-// Middleware CORS
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -27,39 +25,46 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-// Pre-flight untuk semua route
+app.use(express.json());
 app.options("*", cors());
 
-// Parse JSON
-app.use(express.json());
-
-
-// ✅ Midtrans Snap Client
-const snap = new midtransClient.Snap({
-  isProduction: false,
-  serverKey: process.env.MIDTRANS_SERVER_KEY
-});
-
-// ✅ Home route
 app.get("/", (req, res) => {
-  res.send("✅ Backend aktif: Midtrans Snap siap digunakan!");
+  res.send("🚀 Affiliate Midtrans Backend Online!");
 });
 
-// ✅ Buat Transaksi
 app.post("/create-transaction", async (req, res) => {
   try {
     const { nama, email, whatsapp } = req.body;
 
     if (!nama || !email || !whatsapp) {
-      return res.status(400).json({ error: "Data tidak lengkap" });
+      return res.status(400).json({ error: "Semua data wajib diisi." });
     }
+
+    const snap = new midtransClient.Snap({
+      isProduction: false,
+      serverKey: process.env.MIDTRANS_SERVER_KEY
+    });
 
     const parameter = {
       transaction_details: {
         order_id: "AFF-" + Date.now(),
         gross_amount: 99000
       },
-      credit_card: { secure: true },
+      item_details: [
+        {
+          id: "ITEM1",
+          price: 99000,
+          quantity: 1,
+          name: "1000+ Video Affiliate",
+          brand: "Kadar Digi",
+          category: "Digital Product",
+          merchant_name: "Kadar Digi",
+          url: "https://affiliate-frontend-kappa.vercel.app"
+        }
+      ],
+      credit_card: {
+        secure: true
+      },
       customer_details: {
         first_name: nama,
         email: email,
@@ -67,18 +72,10 @@ app.post("/create-transaction", async (req, res) => {
       }
     };
 
-    // Debug log (di dalam try block)
-    console.log("📥 Data masuk:", req.body);
-    console.log("📦 Midtrans payload:", parameter);
-
+    console.log("🔄 Creating transaction with:", parameter);
     const transaction = await snap.createTransaction(parameter);
-    console.log("✅ Snap token:", transaction.token);
 
-    res.status(200).json({
-      token: transaction.token,
-      redirect_url: transaction.redirect_url
-    });
-
+    res.json({ token: transaction.token });
   } catch (err) {
     console.error("❌ Midtrans error:", err.message);
     res.status(500).json({ error: "Gagal membuat transaksi Midtrans." });
@@ -86,5 +83,5 @@ app.post("/create-transaction", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
+  console.log(`🚀 Server ready on http://localhost:${PORT}`);
 });
