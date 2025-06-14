@@ -29,9 +29,9 @@ app.use(cors({
 app.use(express.json());
 app.options("*", cors());
 
-// ✅ Test route
+// ✅ Route tes
 app.get("/", (req, res) => {
-  res.send("🚀 Backend Midtrans aktif untuk Affiliate Tanpa Ribet!");
+  res.send("🚀 Backend Midtrans aktif dan siap digunakan.");
 });
 
 // ✅ Endpoint Snap Midtrans
@@ -44,7 +44,7 @@ app.post("/create-transaction", async (req, res) => {
     }
 
     const snap = new midtransClient.Snap({
-      isProduction: false,
+      isProduction: false, // ⛔ Ubah ke true jika pakai Production
       serverKey: process.env.MIDTRANS_SERVER_KEY
     });
 
@@ -93,10 +93,12 @@ app.post("/create-transaction", async (req, res) => {
       }
     };
 
-    console.log("🔁 Mengirim transaksi ke Midtrans:", parameter);
-    const transaction = await snap.createTransaction(parameter);
+    // ✅ Debug log
+    console.log("🔁 Parameter:", JSON.stringify(parameter, null, 2));
 
+    const transaction = await snap.createTransaction(parameter);
     res.json({ token: transaction.token });
+
   } catch (err) {
     console.error("❌ Midtrans error:", err.message);
     res.status(500).json({ error: "Gagal membuat transaksi Midtrans." });
