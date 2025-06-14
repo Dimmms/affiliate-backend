@@ -8,34 +8,33 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Daftar frontend yang diizinkan mengakses backend
+// ✅ Allowlist frontend dari Vercel & localhost
 const allowedOrigins = [
-  "https://affiliate-frontend-kappa.vercel.app",
   "http://localhost:3000",
+  "https://affiliate-frontend-kappa.vercel.app"
 ];
 
-// ✅ Konfigurasi CORS
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error("❌ Origin tidak diizinkan oleh CORS: " + origin));
     }
   },
-  methods: ["GET", "POST", "OPTIONS"],
+  methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"]
 }));
 
 app.use(express.json());
 app.options("*", cors());
 
-// ✅ Tes koneksi backend
+// ✅ Test route
 app.get("/", (req, res) => {
-  res.send("🚀 Backend Midtrans untuk Affiliate Tanpa Ribet aktif!");
+  res.send("🚀 Backend Midtrans aktif untuk Affiliate Tanpa Ribet!");
 });
 
-// ✅ Endpoint Midtrans: buat token transaksi
+// ✅ Endpoint Snap Midtrans
 app.post("/create-transaction", async (req, res) => {
   try {
     const { nama, email, whatsapp } = req.body;
@@ -63,20 +62,38 @@ app.post("/create-transaction", async (req, res) => {
           brand: "Kadar Digi",
           category: "Digital Product",
           merchant_name: "Affiliate Tanpa Ribet",
-          url: "https://affiliate-frontend-kappa.vercel.app"
+          url: "https://affiliate-frontend-kappa.vercel.app/"
         }
       ],
-      credit_card: {
-        secure: true
-      },
+      credit_card: { secure: true },
       customer_details: {
         first_name: nama,
         email: email,
-        phone: whatsapp
+        phone: whatsapp,
+        billing_address: {
+          first_name: nama,
+          last_name: "Customer",
+          email: email,
+          phone: whatsapp,
+          address: "Jl. Sudirman No. 88",
+          city: "Jakarta",
+          postal_code: "12190",
+          country_code: "IDN"
+        },
+        shipping_address: {
+          first_name: nama,
+          last_name: "Customer",
+          email: email,
+          phone: whatsapp,
+          address: "Jl. Sudirman No. 88",
+          city: "Jakarta",
+          postal_code: "12190",
+          country_code: "IDN"
+        }
       }
     };
 
-    console.log("🔁 Kirim transaksi ke Midtrans:", parameter);
+    console.log("🔁 Mengirim transaksi ke Midtrans:", parameter);
     const transaction = await snap.createTransaction(parameter);
 
     res.json({ token: transaction.token });
@@ -86,7 +103,6 @@ app.post("/create-transaction", async (req, res) => {
   }
 });
 
-// ✅ Jalankan server
 app.listen(PORT, () => {
   console.log(`✅ Server aktif di http://localhost:${PORT}`);
 });
